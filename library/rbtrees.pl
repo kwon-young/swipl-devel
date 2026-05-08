@@ -841,6 +841,34 @@ visit(black(L,K,V,R),L0,Lf) =>
     visit(L,[K-V|L1],Lf),
     visit(R,L0,L1).
 
+%!  rb_visit_range(+Tree, +Min, +Max, -Range) is det.
+%
+%   Retrieves a range of pairs with keys between `Min` and `Max` (inclusive)
+%   from a Tree using standard term comparison.
+
+:- det(rb_visit_range/4).
+rb_visit_range(t(_,T), Min, Max, Pairs) =>
+   visit_range(T, Min, Max, [], Pairs).
+
+visit_range(black('',_,_,_), _Min, _Max, L0, Lf) => 
+   L0 = Lf.
+visit_range(red(L,K,V,R), Min, Max, L0, Lf) =>
+   (   K @< Min
+   ->  visit_range(R, Min, Max, L0, Lf)
+   ;   K @> Max
+   ->  visit_range(L, Min, Max, L0, Lf)
+   ;   visit_range(L, Min, Max, [K-V|L1], Lf),
+       visit_range(R, Min, Max, L0, L1)
+   ).
+visit_range(black(L,K,V,R), Min, Max, L0, Lf) =>
+   (   K @< Min
+   ->  visit_range(R, Min, Max, L0, Lf)
+   ;   K @> Max
+   ->  visit_range(L, Min, Max, L0, Lf)
+   ;   visit_range(L, Min, Max, [K-V|L1], Lf),
+       visit_range(R, Min, Max, L0, L1)
+   ).
+
 :- meta_predicate map(?,2,?,?).  % this is required.
 
 %!  rb_map(+Tree, :G, -NewTree) is semidet.
